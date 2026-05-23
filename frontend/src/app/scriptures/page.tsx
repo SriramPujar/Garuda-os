@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Search, BookOpen, Bookmark } from "lucide-react";
+import { getApiUrl } from "@/utils/api";
 
 export default function ScripturesSearch() {
   const [query, setQuery] = useState("");
@@ -17,7 +18,7 @@ export default function ScripturesSearch() {
     if (!searchQuery.trim()) return;
     setLoading(true);
     try {
-      const response = await fetch(`http://localhost:8000/api/v1/scriptures/search?query=${encodeURIComponent(searchQuery)}`);
+      const response = await fetch(`${getApiUrl()}/api/v1/scriptures/search?query=${encodeURIComponent(searchQuery)}`);
       if (response.ok) {
         const data = await response.json();
         setResults(data.results || []);

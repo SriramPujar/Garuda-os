@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { getApiUrl } from "@/utils/api";
 import { 
   Search, 
   Tv, 
@@ -140,7 +141,7 @@ export default function SpiritualTube() {
   const fetchCuratedVideos = async () => {
     setLoading(true);
     try {
-      const response = await fetch("http://localhost:8000/api/v1/spiritualtube/videos");
+      const response = await fetch(`${getApiUrl()}/api/v1/spiritualtube/videos`);
       if (response.ok) {
         const data = await response.json();
         setVideos(data);
@@ -153,7 +154,7 @@ export default function SpiritualTube() {
 
   const fetchLearningPaths = async () => {
     try {
-      const response = await fetch("http://localhost:8000/api/v1/spiritualtube/paths");
+      const response = await fetch(`${getApiUrl()}/api/v1/spiritualtube/paths`);
       if (response.ok) {
         const data = await response.json();
         setPaths(data);
@@ -175,7 +176,7 @@ export default function SpiritualTube() {
       const minAuth = currentMinAuth !== undefined ? currentMinAuth : minAuthenticity;
       const exp = currentExpand !== undefined ? currentExpand : expandMultilingual;
 
-      let url = `http://localhost:8000/api/v1/discovery/search/videos?query=${encodeURIComponent(queryText)}`;
+      let url = `${getApiUrl()}/api/v1/discovery/search/videos?query=${encodeURIComponent(queryText)}`;
       if (trad && trad !== "All") url += `&tradition=${encodeURIComponent(trad)}`;
       if (ctype && ctype !== "All") url += `&content_type=${encodeURIComponent(ctype)}`;
       if (nrg && nrg !== "All") url += `&energy=${encodeURIComponent(nrg)}`;
@@ -200,7 +201,7 @@ export default function SpiritualTube() {
 
   const selectVideo = async (video: Video) => {
     try {
-      const response = await fetch(`http://localhost:8000/api/v1/spiritualtube/videos/${video.youtube_id}`);
+      const response = await fetch(`${getApiUrl()}/api/v1/spiritualtube/videos/${video.youtube_id}`);
       if (response.ok) {
         const details = await response.json();
         setActiveVideo(details);
@@ -250,7 +251,7 @@ export default function SpiritualTube() {
     const token = localStorage.getItem("token");
     if (!token) return;
     try {
-      const response = await fetch(`http://localhost:8000/api/v1/spiritualtube/videos/${ytId}/notes`, {
+      const response = await fetch(`${getApiUrl()}/api/v1/spiritualtube/videos/${ytId}/notes`, {
         headers: { "Authorization": `Bearer ${token}` }
       });
       if (response.ok) {
@@ -268,7 +269,7 @@ export default function SpiritualTube() {
     if (!token) return;
 
     try {
-      const response = await fetch(`http://localhost:8000/api/v1/spiritualtube/videos/${activeVideo.youtube_id}/notes`, {
+      const response = await fetch(`${getApiUrl()}/api/v1/spiritualtube/videos/${activeVideo.youtube_id}/notes`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -294,7 +295,7 @@ export default function SpiritualTube() {
     if (!token) return;
 
     try {
-      const response = await fetch(`http://localhost:8000/api/v1/spiritualtube/notes/${noteId}`, {
+      const response = await fetch(`${getApiUrl()}/api/v1/spiritualtube/notes/${noteId}`, {
         method: "DELETE",
         headers: { "Authorization": `Bearer ${token}` }
       });
@@ -311,7 +312,7 @@ export default function SpiritualTube() {
     if (!activeVideo) return;
     setAiSummaryLoading(true);
     try {
-      const response = await fetch(`http://localhost:8000/api/v1/spiritualtube/videos/${activeVideo.youtube_id}/ai-summary`, {
+      const response = await fetch(`${getApiUrl()}/api/v1/spiritualtube/videos/${activeVideo.youtube_id}/ai-summary`, {
         method: "POST"
       });
       if (response.ok) {
@@ -328,7 +329,7 @@ export default function SpiritualTube() {
   // Knowledge Graph Loader
   const fetchGraphData = async () => {
     try {
-      const response = await fetch("http://localhost:8000/api/v1/discovery/graph");
+      const response = await fetch(`${getApiUrl()}/api/v1/discovery/graph`);
       if (response.ok) {
         const data = await response.json();
         setGraphData(data);
@@ -341,7 +342,7 @@ export default function SpiritualTube() {
   // Crawl Dashboard Loaders
   const fetchCrawlQueueStatus = async () => {
     try {
-      const response = await fetch("http://localhost:8000/api/v1/discovery/queue/status");
+      const response = await fetch(`${getApiUrl()}/api/v1/discovery/queue/status`);
       if (response.ok) {
         const data = await response.json();
         setQueueStats(data.queue_stats);
@@ -365,7 +366,7 @@ export default function SpiritualTube() {
     }
 
     try {
-      const response = await fetch("http://localhost:8000/api/v1/discovery/queue/add", {
+      const response = await fetch(`${getApiUrl()}/api/v1/discovery/queue/add`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -401,7 +402,7 @@ export default function SpiritualTube() {
     }
 
     try {
-      const response = await fetch("http://localhost:8000/api/v1/discovery/queue/trigger", {
+      const response = await fetch(`${getApiUrl()}/api/v1/discovery/queue/trigger`, {
         method: "POST",
         headers: {
           "Authorization": `Bearer ${token}`

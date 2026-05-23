@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useRef } from "react";
 import { motion } from "framer-motion";
+import { getApiUrl } from "@/utils/api";
 import { 
   Network, 
   FileText, 
@@ -194,7 +195,7 @@ export default function ConsciousnessWorkspace() {
     const token = localStorage.getItem("token");
     if (!token) return;
     try {
-      const response = await fetch("http://localhost:8000/api/v1/workspace/notes", {
+      const response = await fetch(`${getApiUrl()}/api/v1/workspace/notes`, {
         headers: { "Authorization": `Bearer ${token}` }
       });
       if (response.ok) {
@@ -210,7 +211,7 @@ export default function ConsciousnessWorkspace() {
     const token = localStorage.getItem("token");
     if (!token) return;
     try {
-      const response = await fetch("http://localhost:8000/api/v1/workspace/notes/graph", {
+      const response = await fetch(`${getApiUrl()}/api/v1/workspace/notes/graph`, {
         headers: { "Authorization": `Bearer ${token}` }
       });
       if (response.ok) {
@@ -245,7 +246,7 @@ export default function ConsciousnessWorkspace() {
     const token = localStorage.getItem("token");
     if (!token) return;
     try {
-      const response = await fetch("http://localhost:8000/api/v1/workspace/tasks", {
+      const response = await fetch(`${getApiUrl()}/api/v1/workspace/tasks`, {
         headers: { "Authorization": `Bearer ${token}` }
       });
       if (response.ok) {
@@ -289,7 +290,7 @@ export default function ConsciousnessWorkspace() {
       let response;
       if (selectedNote) {
         // Update
-        response = await fetch(`http://localhost:8000/api/v1/workspace/notes/${selectedNote.id}`, {
+        response = await fetch(`${getApiUrl()}/api/v1/workspace/notes/${selectedNote.id}`, {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",
@@ -299,7 +300,7 @@ export default function ConsciousnessWorkspace() {
         });
       } else {
         // Create
-        response = await fetch("http://localhost:8000/api/v1/workspace/notes", {
+        response = await fetch(`${getApiUrl()}/api/v1/workspace/notes`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -326,7 +327,7 @@ export default function ConsciousnessWorkspace() {
     if (!token) return;
 
     try {
-      const response = await fetch(`http://localhost:8000/api/v1/workspace/notes/${noteId}`, {
+      const response = await fetch(`${getApiUrl()}/api/v1/workspace/notes/${noteId}`, {
         method: "DELETE",
         headers: { "Authorization": `Bearer ${token}` }
       });
@@ -348,7 +349,7 @@ export default function ConsciousnessWorkspace() {
     if (!token) return;
 
     try {
-      const response = await fetch("http://localhost:8000/api/v1/workspace/notes/links", {
+      const response = await fetch(`${getApiUrl()}/api/v1/workspace/notes/links`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -379,7 +380,7 @@ export default function ConsciousnessWorkspace() {
     if (!token) return;
 
     try {
-      const response = await fetch("http://localhost:8000/api/v1/workspace/tasks", {
+      const response = await fetch(`${getApiUrl()}/api/v1/workspace/tasks`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -406,7 +407,7 @@ export default function ConsciousnessWorkspace() {
     if (!token) return;
 
     try {
-      const response = await fetch(`http://localhost:8000/api/v1/workspace/tasks/${task.id}`, {
+      const response = await fetch(`${getApiUrl()}/api/v1/workspace/tasks/${task.id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -429,7 +430,7 @@ export default function ConsciousnessWorkspace() {
     if (!token) return;
 
     try {
-      const response = await fetch(`http://localhost:8000/api/v1/workspace/tasks/${taskId}`, {
+      const response = await fetch(`${getApiUrl()}/api/v1/workspace/tasks/${taskId}`, {
         method: "DELETE",
         headers: { "Authorization": `Bearer ${token}` }
       });
@@ -462,9 +463,9 @@ export default function ConsciousnessWorkspace() {
   };
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 h-[80vh]">
+    <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 h-auto lg:h-[80vh]">
       {/* Col 1: Notes Sidebar (List) */}
-      <div className="lg:col-span-3 bg-card border border-sacred-border rounded-xl p-4 flex flex-col h-full overflow-hidden">
+      <div className="lg:col-span-3 bg-card border border-sacred-border rounded-xl p-4 flex flex-col h-[400px] lg:h-full overflow-hidden">
         <div className="flex justify-between items-center mb-4 border-b border-sacred-border pb-2.5">
           <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-sacred flex items-center gap-1.5">
             <FileText className="h-4 w-4 text-saffron" />
@@ -517,7 +518,7 @@ export default function ConsciousnessWorkspace() {
       </div>
 
       {/* Col 2: Markdown Editor */}
-      <div className="lg:col-span-5 bg-card border border-sacred-border rounded-xl p-5 flex flex-col h-full overflow-hidden">
+      <div className="lg:col-span-5 bg-card border border-sacred-border rounded-xl p-5 flex flex-col h-[450px] lg:h-full overflow-hidden">
         <div className="flex justify-between items-center mb-4 border-b border-sacred-border pb-2.5">
           <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-sacred flex items-center gap-1.5">
             <PenTool className="h-4 w-4 text-saffron" />
@@ -590,9 +591,9 @@ export default function ConsciousnessWorkspace() {
       </div>
 
       {/* Col 3: Visualizer Graph & Sadhana tasks */}
-      <div className="lg:col-span-4 flex flex-col gap-6 h-full overflow-hidden">
+      <div className="lg:col-span-4 flex flex-col gap-6 h-auto lg:h-full overflow-hidden">
         {/* Obsidian Link Graph */}
-        <div className="bg-card border border-sacred-border rounded-xl p-4 flex flex-col h-1/2 overflow-hidden">
+        <div className="bg-card border border-sacred-border rounded-xl p-4 flex flex-col h-[320px] lg:h-1/2 overflow-hidden">
           <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-sacred flex items-center gap-1.5 mb-2.5">
             <Network className="h-4 w-4 text-saffron" />
             <span>Second Brain Link Graph</span>
@@ -688,7 +689,7 @@ export default function ConsciousnessWorkspace() {
         </div>
 
         {/* Sadhana tasks tracker */}
-        <div className="bg-card border border-sacred-border rounded-xl p-4 flex flex-col h-1/2 overflow-hidden">
+        <div className="bg-card border border-sacred-border rounded-xl p-4 flex flex-col h-[350px] lg:h-1/2 overflow-hidden">
           <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-sacred flex items-center gap-1.5 mb-2.5">
             <CheckSquare className="h-4 w-4 text-saffron" />
             <span>Sadhana Checklist</span>

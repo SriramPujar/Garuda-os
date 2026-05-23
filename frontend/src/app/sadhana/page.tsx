@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Flame, Plus, Check, Award, Compass } from "lucide-react";
+import { getApiUrl } from "@/utils/api";
 
 export default function SadhanaPage() {
   const [routines, setRoutines] = useState<any[]>([]);
@@ -33,14 +34,14 @@ export default function SadhanaPage() {
 
     try {
       // Fetch routines
-      const rRes = await fetch("http://localhost:8000/api/v1/sadhana/routines", { headers });
+      const rRes = await fetch(`${getApiUrl()}/api/v1/sadhana/routines`, { headers });
       if (rRes.ok) {
         const rData = await rRes.json();
         setRoutines(rData);
       }
       
       // Fetch streak
-      const sRes = await fetch("http://localhost:8000/api/v1/sadhana/streak", { headers });
+      const sRes = await fetch(`${getApiUrl()}/api/v1/sadhana/streak`, { headers });
       if (sRes.ok) {
         const sData = await sRes.json();
         setStreak(sData);
@@ -59,7 +60,7 @@ export default function SadhanaPage() {
     }
 
     try {
-      const res = await fetch("http://localhost:8000/api/v1/sadhana/routines", {
+      const res = await fetch(`${getApiUrl()}/api/v1/sadhana/routines`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -96,7 +97,7 @@ export default function SadhanaPage() {
     const notes = logNotes[routineId] || "Logged via Sadhana dashboard";
 
     try {
-      const res = await fetch("http://localhost:8000/api/v1/sadhana/logs", {
+      const res = await fetch(`${getApiUrl()}/api/v1/sadhana/logs`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

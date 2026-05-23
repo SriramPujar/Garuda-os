@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { getApiUrl } from "@/utils/api";
 import { 
   Play, 
   Pause, 
@@ -206,7 +207,7 @@ export default function GarudaNada() {
       return;
     }
 
-    let url = "http://localhost:8000/api/v1/nada/tracks";
+    let url = `${getApiUrl()}/api/v1/nada/tracks`;
     if (selected !== "All") {
       url += `?category=${selected}`;
     }
@@ -231,7 +232,7 @@ export default function GarudaNada() {
       const minAuth = currentMinAuth !== undefined ? currentMinAuth : minAuthenticity;
       const exp = currentExpand !== undefined ? currentExpand : expandMultilingual;
 
-      let url = `http://localhost:8000/api/v1/discovery/search/audio?query=${encodeURIComponent(queryText)}`;
+      let url = `${getApiUrl()}/api/v1/discovery/search/audio?query=${encodeURIComponent(queryText)}`;
       if (trad && trad !== "All") url += `&tradition=${encodeURIComponent(trad)}`;
       if (cat && cat !== "All") url += `&category=${encodeURIComponent(cat)}`;
       if (minAuth > 0) url += `&min_authenticity=${minAuth}`;
@@ -358,7 +359,7 @@ export default function GarudaNada() {
     
     const token = localStorage.getItem("token");
     try {
-      const response = await fetch("http://localhost:8000/api/v1/nada/translate-lyrics", {
+      const response = await fetch(`${getApiUrl()}/api/v1/nada/translate-lyrics`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -383,7 +384,7 @@ export default function GarudaNada() {
     const token = localStorage.getItem("token");
     if (!token) return;
     try {
-      await fetch(`http://localhost:8000/api/v1/nada/tracks/${trackId}/favorite`, {
+      await fetch(`${getApiUrl()}/api/v1/nada/tracks/${trackId}/favorite`, {
         method: "POST",
         headers: { "Authorization": `Bearer ${token}` }
       });
@@ -401,7 +402,7 @@ export default function GarudaNada() {
   // Knowledge Graph Loader
   const fetchGraphData = async () => {
     try {
-      const response = await fetch("http://localhost:8000/api/v1/discovery/graph");
+      const response = await fetch(`${getApiUrl()}/api/v1/discovery/graph`);
       if (response.ok) {
         const data = await response.json();
         setGraphData(data);
@@ -414,7 +415,7 @@ export default function GarudaNada() {
   // Crawl Dashboard Loaders
   const fetchCrawlQueueStatus = async () => {
     try {
-      const response = await fetch("http://localhost:8000/api/v1/discovery/queue/status");
+      const response = await fetch(`${getApiUrl()}/api/v1/discovery/queue/status`);
       if (response.ok) {
         const data = await response.json();
         setQueueStats(data.queue_stats);
@@ -438,7 +439,7 @@ export default function GarudaNada() {
     }
 
     try {
-      const response = await fetch("http://localhost:8000/api/v1/discovery/queue/add", {
+      const response = await fetch(`${getApiUrl()}/api/v1/discovery/queue/add`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -474,7 +475,7 @@ export default function GarudaNada() {
     }
 
     try {
-      const response = await fetch("http://localhost:8000/api/v1/discovery/queue/trigger", {
+      const response = await fetch(`${getApiUrl()}/api/v1/discovery/queue/trigger`, {
         method: "POST",
         headers: { "Authorization": `Bearer ${token}` }
       });

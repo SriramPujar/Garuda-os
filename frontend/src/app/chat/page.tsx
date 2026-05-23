@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Send, Cpu, User, BookOpen, AlertTriangle } from "lucide-react";
+import { getApiUrl } from "@/utils/api";
 
 interface Message {
   role: "user" | "assistant";
@@ -43,7 +44,7 @@ export default function ChatSpace() {
     setLoading(true);
 
     try {
-      const response = await fetch("http://localhost:8000/api/v1/chat", {
+      const response = await fetch(`${getApiUrl()}/api/v1/chat`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -80,7 +81,7 @@ export default function ChatSpace() {
         ...prev,
         {
           role: "assistant",
-          content: "Hari Om. I am unable to connect to the Garuda Dharma OS backend service at this moment. Please check if your FastAPI backend is running on `http://localhost:8000` or if you need to register a user session in the Settings tab.",
+          content: `Hari Om. I am unable to connect to the Garuda Dharma OS backend service at this moment. Please check if your FastAPI backend is running at ${getApiUrl()} or if you need to register a user session in the Settings tab.`,
           agent: "System Fallback"
         }
       ]);

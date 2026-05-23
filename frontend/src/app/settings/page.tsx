@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Settings, User, Key, Save, Check } from "lucide-react";
+import { Settings, User, Key, Save, Check, Link2 } from "lucide-react";
+import { getApiUrl } from "@/utils/api";
 
 export default function SettingsPage() {
   const [isRegistered, setIsRegistered] = useState(false);
@@ -17,6 +18,9 @@ export default function SettingsPage() {
   
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
+  
+  // Backend URL configuration
+  const [backendUrlInput, setBackendUrlInput] = useState("http://localhost:8000");
 
   useEffect(() => {
     // Check if token exists and fetch details
@@ -25,11 +29,17 @@ export default function SettingsPage() {
       setIsRegistered(true);
       fetchProfile(token);
     }
+    
+    // Load custom backend URL from localStorage if any
+    const savedBackend = localStorage.getItem("garuda_backend_url");
+    if (savedBackend) {
+      setBackendUrlInput(savedBackend);
+    }
   }, []);
 
   const fetchProfile = async (token: string) => {
     try {
-      const res = await fetch("http://localhost:8000/api/v1/auth/me", {
+      const res = await fetch(`${getApiUrl()}/api/v1/auth/me`, {
         headers: { "Authorization": `Bearer ${token}` }
       });
       if (res.ok) {
@@ -53,7 +63,7 @@ export default function SettingsPage() {
     setError("");
     setMessage("");
     try {
-      const res = await fetch("http://localhost:8000/api/v1/auth/register", {
+      const res = await fetch(`${getApiUrl()}/api/v1/auth/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -86,7 +96,7 @@ export default function SettingsPage() {
       formData.append("username", username);
       formData.append("password", password);
 
-      const res = await fetch("http://localhost:8000/api/v1/auth/token", {
+      const res = await fetch(`${getApiUrl()}/api/v1/auth/token`, {
         method: "POST",
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
         body: formData.toString()
@@ -114,7 +124,7 @@ export default function SettingsPage() {
     if (!token) return;
 
     try {
-      const res = await fetch("http://localhost:8000/api/v1/auth/profile", {
+      const res = await fetch(`${getApiUrl()}/api/v1/auth/profile`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -139,6 +149,23 @@ export default function SettingsPage() {
     }
   };
 
+  const handleSaveBackendUrl = (e: React.FormEvent) => {
+    e.preventDefault();
+    setError("");
+    setMessage("");
+    try {
+      // Validate basic format
+      new URL(backendUrlInput);
+      localStorage.setItem("garuda_backend_url", backendUrlInput);
+      setMessage("Backend connection URL updated! Reloading parameters...");
+      setTimeout(() => {
+        window.location.reload();
+      }, 1500);
+    } catch (err) {
+      setError("Please enter a valid URL (e.g. http://localhost:8000 or https://your-tunnel.ngrok-free.app)");
+    }
+  };
+
   const handleLogout = () => {
     localStorage.removeItem("token");
     setIsRegistered(false);
@@ -150,7 +177,7 @@ export default function SettingsPage() {
   };
 
   return (
-    <div className="space-y-6 max-w-2xl">
+    <div className="space-y-6 max-w-2xl pb-10">
       {/* Title Header */}
       <div className="flex items-center gap-3">
         <Settings className="h-6 w-6 text-saffron saffron-glow" />
@@ -171,6 +198,36 @@ export default function SettingsPage() {
         </div>
       )}
 
+      {/* Connection Settings panel */}
+      <div className="rounded-xl border border-sacred-border bg-card p-6 space-y-4">
+        <h3 className="text-sm font-semibold uppercase tracking-wider text-foreground flex items-center gap-2">
+          <Link2 className="h-4.5 w-4.5 text-saffron" />
+          <span>Backend Connection Settings</span>
+        </h3>
+        <p className="text-[11px] text-muted-sacred leading-relaxed">
+          Specify your local-first FastAPI backend service API base URL. Use <code className="text-saffron font-mono">http://localhost:8000</code> when running locally.
+          If accessing via Vercel (HTTPS), enter a secure HTTPS tunnel URL (e.g. Cloudflare or ngrok) to prevent Mixed Content security blocks.
+        </p>
+        <form onSubmit={handleSaveBackendUrl} className="flex gap-2 items-end">
+          <div className="flex-1 space-y-1">
+            <label className="text-[9px] uppercase font-bold text-muted-sacred">Backend API URL</label>
+            <input 
+              type="text" 
+              value={backendUrlInput}
+              onChange={(e) => setBackendUrlInput(e.target.value)}
+              placeholder="http://localhost:8000"
+              className="w-full rounded border border-sacred-border bg-background px-3 py-1.5 text-xs text-foreground focus:outline-none focus:border-saffron/40 font-medium"
+            />
+          </div>
+          <button
+            type="submit"
+            className="rounded bg-saffron text-background px-4 py-1.8 text-xs font-semibold hover:bg-saffron-light flex items-center gap-1 shrink-0 cursor-pointer"
+          >
+            <Save className="h-3.5 w-3.5" /> Save API URL
+          </button>
+        </form>
+      </div>
+
       {/* Auth Panel if not registered */}
       {!isRegistered ? (
         <div className="rounded-xl border border-sacred-border bg-card p-6 space-y-6">
@@ -188,7 +245,7 @@ export default function SettingsPage() {
                   value={username} 
                   onChange={(e) => setUsername(e.target.value)}
                   placeholder="e.g. arjuna"
-                  className="w-full rounded border border-sacred-border bg-background px-3 py-1.5 text-xs text-foreground focus:outline-none"
+                  className="w-full rounded border border-sacred-border bg-background px-3 py-1.5 text-xs text-foreground focus:outline-none focus:border-saffron/40 font-medium"
                   required
                 />
               </div>
@@ -199,7 +256,7 @@ export default function SettingsPage() {
                   value={email} 
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="e.g. arjuna@kurukshetra.org"
-                  className="w-full rounded border border-sacred-border bg-background px-3 py-1.5 text-xs text-foreground focus:outline-none"
+                  className="w-full rounded border border-sacred-border bg-background px-3 py-1.5 text-xs text-foreground focus:outline-none focus:border-saffron/40 font-medium"
                   required
                 />
               </div>
@@ -212,19 +269,21 @@ export default function SettingsPage() {
                 value={password} 
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Secure local key"
-                className="w-full rounded border border-sacred-border bg-background px-3 py-1.5 text-xs text-foreground focus:outline-none"
+                className="w-full rounded border border-sacred-border bg-background px-3 py-1.5 text-xs text-foreground focus:outline-none focus:border-saffron/40 font-medium"
                 required
               />
             </div>
 
             <div className="flex gap-2.5 pt-2">
               <button 
+                type="button"
                 onClick={handleRegister} 
                 className="rounded bg-saffron text-background px-4 py-2 text-xs font-semibold hover:bg-saffron-light cursor-pointer"
               >
                 Register & Login
               </button>
               <button 
+                type="button"
                 onClick={handleLogin}
                 className="rounded border border-sacred-border text-muted-sacred px-4 py-2 text-xs hover:bg-card-hover cursor-pointer"
               >
@@ -255,7 +314,7 @@ export default function SettingsPage() {
                 <select 
                   value={deityPreference} 
                   onChange={(e) => setDeityPreference(e.target.value)}
-                  className="w-full rounded border border-sacred-border bg-background px-3 py-1.5 text-xs text-foreground focus:outline-none"
+                  className="w-full rounded border border-sacred-border bg-background px-3 py-1.5 text-xs text-foreground focus:outline-none focus:border-saffron/30 font-medium"
                 >
                   <option value="Ganesha">Lord Ganesha</option>
                   <option value="Shiva">Lord Shiva</option>
@@ -270,7 +329,7 @@ export default function SettingsPage() {
                 <select 
                   value={philosophyPreference} 
                   onChange={(e) => setPhilosophyPreference(e.target.value)}
-                  className="w-full rounded border border-sacred-border bg-background px-3 py-1.5 text-xs text-foreground focus:outline-none"
+                  className="w-full rounded border border-sacred-border bg-background px-3 py-1.5 text-xs text-foreground focus:outline-none focus:border-saffron/30 font-medium"
                 >
                   <option value="Advaita">Advaita Vedanta (Non-Dualism)</option>
                   <option value="Vishishtadvaita">Vishishtadvaita (Qualified Non-Dualism)</option>
@@ -287,7 +346,7 @@ export default function SettingsPage() {
                 value={goals} 
                 onChange={(e) => setGoals(e.target.value)}
                 placeholder="Write your core goals, practices, or vows here..."
-                className="w-full h-24 rounded border border-sacred-border bg-background px-3 py-1.5 text-xs text-foreground focus:outline-none"
+                className="w-full h-24 rounded border border-sacred-border bg-background px-3 py-1.5 text-xs text-foreground focus:outline-none focus:border-saffron/30 font-medium"
               />
             </div>
 

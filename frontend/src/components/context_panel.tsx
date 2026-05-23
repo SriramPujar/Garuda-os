@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Flame, Sparkles, BookMarked, Eye } from "lucide-react";
+import { getApiUrl } from "@/utils/api";
 
 export default function ContextPanel() {
   const [streakData, setStreakData] = useState({ current_streak: 3, max_streak: 12 });
@@ -18,7 +19,7 @@ export default function ContextPanel() {
     const token = localStorage.getItem("token");
     if (token) {
       // Fetch streak
-      fetch("http://localhost:8000/api/v1/sadhana/streak", {
+      fetch(`${getApiUrl()}/api/v1/sadhana/streak`, {
         headers: { "Authorization": `Bearer ${token}` }
       })
       .then(res => res.json())
@@ -26,7 +27,7 @@ export default function ContextPanel() {
       .catch(() => {});
 
       // Fetch active routines
-      fetch("http://localhost:8000/api/v1/sadhana/routines", {
+      fetch(`${getApiUrl()}/api/v1/sadhana/routines`, {
         headers: { "Authorization": `Bearer ${token}` }
       })
       .then(res => res.json())
@@ -34,7 +35,7 @@ export default function ContextPanel() {
       .catch(() => {});
 
       // Fetch daily verse
-      fetch("http://localhost:8000/api/v1/scriptures/daily-verse")
+      fetch(`${getApiUrl()}/api/v1/scriptures/daily-verse`)
       .then(res => res.json())
       .then(data => setDailyVerse(data))
       .catch(() => {});

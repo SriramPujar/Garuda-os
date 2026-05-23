@@ -14,6 +14,7 @@ import {
   User
 } from "lucide-react";
 import Link from "next/link";
+import { getApiUrl } from "@/utils/api";
 
 export default function Home() {
   const [userName, setUserName] = useState("Seeker");
@@ -28,7 +29,7 @@ export default function Home() {
     // Check if token and fetch user details
     const token = localStorage.getItem("token");
     if (token) {
-      fetch("http://localhost:8000/api/v1/auth/me", {
+      fetch(`${getApiUrl()}/api/v1/auth/me`, {
         headers: { "Authorization": `Bearer ${token}` }
       })
       .then(res => res.json())

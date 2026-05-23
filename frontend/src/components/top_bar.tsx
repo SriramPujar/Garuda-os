@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
 import { Bell, Mic, Cpu } from "lucide-react";
+import { getApiUrl } from "@/utils/api";
 
 const PAGE_TITLES: Record<string, string> = {
   "/": "Home",
@@ -28,7 +29,7 @@ export default function TopBar() {
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (token) {
-      fetch("http://localhost:8000/api/v1/sadhana/streak", {
+      fetch(`${getApiUrl()}/api/v1/sadhana/streak`, {
         headers: { Authorization: `Bearer ${token}` },
       })
         .then((r) => r.json())

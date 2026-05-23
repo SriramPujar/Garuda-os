@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Sparkles, Flower, Gift, Check, Clock } from "lucide-react";
+import { getApiUrl } from "@/utils/api";
 
 export default function RitualsPage() {
   const [templates, setTemplates] = useState<any[]>([]);
@@ -15,7 +16,7 @@ export default function RitualsPage() {
 
   const fetchTemplates = async () => {
     try {
-      const res = await fetch("http://localhost:8000/api/v1/rituals/templates");
+      const res = await fetch(`${getApiUrl()}/api/v1/rituals/templates`);
       if (res.ok) {
         const data = await res.json();
         setTemplates(data);
@@ -35,7 +36,7 @@ export default function RitualsPage() {
     }
 
     try {
-      const res = await fetch("http://localhost:8000/api/v1/rituals/logs", {
+      const res = await fetch(`${getApiUrl()}/api/v1/rituals/logs`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

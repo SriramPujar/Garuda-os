@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { BookOpen, Compass, Heart, AlertCircle, Smile } from "lucide-react";
+import { getApiUrl } from "@/utils/api";
 
 export default function JournalPage() {
   const [entries, setEntries] = useState<any[]>([]);
@@ -28,7 +29,7 @@ export default function JournalPage() {
       headers["Authorization"] = `Bearer ${token}`;
     }
     try {
-      const res = await fetch("http://localhost:8000/api/v1/journal", { headers });
+      const res = await fetch(`${getApiUrl()}/api/v1/journal`, { headers });
       if (res.ok) {
         const data = await res.json();
         setEntries(data);
@@ -50,7 +51,7 @@ export default function JournalPage() {
 
     setLoading(true);
     try {
-      const res = await fetch("http://localhost:8000/api/v1/journal", {
+      const res = await fetch(`${getApiUrl()}/api/v1/journal`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
