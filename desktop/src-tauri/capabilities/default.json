@@ -1,0 +1,14 @@
+{
+  "identifier": "default",
+  "description": "Default capabilities for Garuda Dharma OS",
+  "windows": ["main"],
+  "permissions": [
+    "core:path:default",
+    "core:event:default",
+    "core:window:default",
+    "core:app:default",
+    "core:resources:default",
+    "core:menu:default",
+    "core:tray:default"
+  ]
+}

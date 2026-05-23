@@ -1,0 +1,60 @@
+# Dependencies
+**/node_modules/
+**/.pnp
+.pnp.*
+**/yarn/*
+.pnpm-debug.log*
+
+# Python
+**/__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.venv/
+ENV/
+pip-log.txt
+pip-delete-this-directory.txt
+.pytest_cache/
+.tox/
+.coverage
+.cache
+nosetests.xml
+coverage.xml
+*,cover
+.hypothesis/
+
+# Next.js
+**/.next/
+**/out/
+**/build/
+
+# Local databases
+**/*.db
+**/test_qdb/
+**/qdrant_data/
+**/qdrant_db/
+backend/app/data/
+
+# Environment files & Credentials (CRITICAL: DO NOT COMMIT SENSITIVE KEYS)
+.env
+.env.local
+.env.development
+.env.test
+.env.production
+.env.staging
+.env.local
+backend/.env
+frontend/.env
+.vercel/
+
+# TypeScript build info
+*.tsbuildinfo
+next-env.d.ts
+
+# Misc
+.DS_Store
+*.pem
+*.log

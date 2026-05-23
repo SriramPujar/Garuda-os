@@ -1,0 +1,69 @@
+@import "tailwindcss";
+
+:root {
+  --background: #0d0b0a;
+  --foreground: #f4efe6;
+  --card-bg: #151311;
+  --card-hover: #1c1a17;
+  --border: #2a2521;
+  --muted: #a0988d;
+  --saffron: #e58e26;
+  --saffron-dim: #9c5c10;
+  --saffron-light: #fad390;
+  --calm: #4a6b5c;
+  --overloaded: #a63e3e;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card-bg);
+  --color-card-hover: var(--card-hover);
+  --color-border-sacred: var(--border);
+  --color-muted-sacred: var(--muted);
+  --color-saffron: var(--saffron);
+  --color-saffron-dim: var(--saffron-dim);
+  --color-saffron-light: var(--saffron-light);
+  --color-calm: var(--calm);
+  --color-overloaded: var(--overloaded);
+  
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+  overflow: hidden;
+}
+
+/* Custom Scrollbar for temple-like minimalism */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--background);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--saffron-dim);
+}
+
+/* Custom glow animations */
+@keyframes pulseGlow {
+  0%, 100% {
+    box-shadow: 0 0 15px rgba(229, 142, 38, 0.1);
+  }
+  50% {
+    box-shadow: 0 0 25px rgba(229, 142, 38, 0.25);
+  }
+}
+
+.saffron-glow {
+  animation: pulseGlow 4s infinite ease-in-out;
+}
