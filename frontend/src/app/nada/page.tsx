@@ -320,15 +320,12 @@ export default function GarudaNada() {
     }
     if (queryText.trim()) {
       const q = queryText.toLowerCase();
-      const matched = filtered.filter(t => 
+      filtered = filtered.filter(t => 
         t.title.toLowerCase().includes(q) || 
         t.artist.toLowerCase().includes(q) || 
         (t.deity && t.deity.toLowerCase().includes(q)) || 
         (t.lyrics && t.lyrics.toLowerCase().includes(q))
       );
-      if (matched.length > 0) {
-        filtered = matched;
-      }
     }
     setTracks(filtered);
   };
@@ -977,7 +974,24 @@ export default function GarudaNada() {
                     <span>Sourcing devotional audios...</span>
                   </div>
                 ) : tracks.length === 0 ? (
-                  <div className="text-center py-8 text-xs text-muted-sacred">No tracks found. Search online!</div>
+                  isBackendOffline && searchQuery ? (
+                    <div className="text-center py-10 border border-dashed border-sacred-border rounded-xl bg-background/20 p-6 space-y-4">
+                      <div className="text-2xl">🪔</div>
+                      <h4 className="text-sm font-semibold text-foreground">No Offline Matches Found</h4>
+                      <p className="text-xs text-muted-sacred max-w-md mx-auto leading-relaxed">
+                        We couldn't find any offline tracks matching <strong className="text-saffron">&ldquo;{searchQuery}&rdquo;</strong>. 
+                        Please launch your local FastAPI server and configure it in Settings to search the live web.
+                      </p>
+                      <button 
+                        onClick={() => { setSearchQuery(""); fetchTracks("All"); }}
+                        className="text-xs font-bold bg-saffron/10 border border-saffron/20 hover:bg-saffron text-saffron hover:text-background px-4 py-2 rounded-lg transition-colors cursor-pointer"
+                      >
+                        Clear Search & Show All Offline Tracks
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="text-center py-8 text-xs text-muted-sacred">No tracks found. Try searching for a different topic!</div>
+                  )
                 ) : (
                   tracks.map((t) => (
                     <div 

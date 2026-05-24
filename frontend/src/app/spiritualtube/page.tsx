@@ -207,13 +207,10 @@ export default function SpiritualTube() {
     let filtered = [...STATIC_FALLBACK_VIDEOS];
     if (queryText.trim()) {
       const q = queryText.toLowerCase();
-      const matched = filtered.filter(v => 
+      filtered = filtered.filter(v => 
         v.title.toLowerCase().includes(q) || 
         v.description.toLowerCase().includes(q)
       );
-      if (matched.length > 0) {
-        filtered = matched;
-      }
     }
     setVideos(filtered);
   };
@@ -935,6 +932,23 @@ export default function SpiritualTube() {
                     <div className="text-center space-y-2">
                       <RefreshCw className="h-6 w-6 text-saffron animate-spin mx-auto" />
                       <span className="text-xs text-muted-sacred font-medium block animate-pulse">Running advanced hybrid discovery search...</span>
+                    </div>
+                  </div>
+                ) : videos.length === 0 && hasSearched && isBackendOffline ? (
+                  <div className="flex h-64 items-center justify-center border border-dashed border-sacred-border rounded-xl bg-card/25 text-center p-6">
+                    <div className="max-w-md space-y-4 animate-fade-in">
+                      <div className="text-3xl">🪔</div>
+                      <h4 className="text-sm font-semibold text-foreground">No Offline Matches Found</h4>
+                      <p className="text-xs text-muted-sacred leading-relaxed">
+                        We couldn't find any offline videos matching <strong className="text-saffron">&ldquo;{lastQuery}&rdquo;</strong>.
+                        Please launch your local FastAPI server and configure it in Settings to search the live web.
+                      </p>
+                      <button 
+                        onClick={() => { setSearchQuery(""); fetchCuratedVideos(); }}
+                        className="text-xs font-bold bg-saffron/10 border border-saffron/20 hover:bg-saffron text-saffron hover:text-background px-4 py-2 rounded-lg transition-colors cursor-pointer"
+                      >
+                        Clear Search & Show All Offline Videos
+                      </button>
                     </div>
                   </div>
                 ) : videos.length === 0 && hasSearched ? (

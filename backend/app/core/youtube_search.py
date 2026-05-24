@@ -70,14 +70,23 @@ SPIRITUAL_MUST_CONTAIN = [
     "saraswati", "ganesh", "ganesha", "hanuman", "murugan", "ayyappa",
     "devi", "shakti", "brahma", "narayana", "venkatesh", "balaji",
     "tirupati", "venkateswara", "radha", "sita", "parvati", "mahadev",
+    "shiv", "shambhu", "sambhu", "kartikeya", "subrahmanya", "subramanya",
+    "vinayaka", "ganpati", "ganapathi", "ganapati", "muruga", "gayatri",
+    "lalitha", "lalita", "bhairav", "bhairava", "dattatreya", "hanumana",
+    "saraswathi", "lakshmy", "laxmi",
     # Scriptures
     "gita", "bhagavad", "upanishad", "veda", "vedic", "ramayana",
     "mahabharata", "mahabharat", "purana", "bhagavatam", "bhagavat",
     "geeta", "ramcharitmanas", "chalisa", "stotram", "stotra",
+    "sahasranama", "sahasranamam", "ashtakam", "astakam", "pancharatnam",
+    "hrudayam", "hridayam", "lahari", "rudram", "chamakam", "suktam", "sukta",
+    "hymn", "hymns", "shloka", "sloka", "shlokas", "slokas", "recitation",
+    "reciting", "stuti", "jaap", "naam", "namavali", "upanishads", "vedas",
+    "puranas", "slok",
     # Practices
     "bhajan", "kirtan", "mantra", "chant", "puja", "aarti", "arti",
     "meditation", "dhyana", "yoga", "pranayama", "satsang", "pravachan",
-    "havan", "homam", "abhishek", "japa", "sadhana", "tapas",
+    "havan", "homam", "abhishek", "japa", "sadhana", "tapas", "prayers", "prayer",
     # Concepts & Paths
     "vedanta", "advaita", "dvaita", "bhakti", "karma", "dharma",
     "moksha", "liberation", "enlightenment", "self-realization",
@@ -86,7 +95,14 @@ SPIRITUAL_MUST_CONTAIN = [
     # Teachers & Organizations
     "swami", "guru", "maharaj", "acharya", "sadhu", "sanyasi",
     "ashram", "iskcon", "isha", "art of living", "chinmaya",
-    "ramakrishna", "vivekananda",
+    "ramakrishna", "vivekananda", "ramana", "maharshi", "shankara",
+    "nisargadatta", "neem karoli", "yogananda", "sivananda", "paramahansa",
+    "sadhguru", "osho", "chinmayananda", "krishnamurti", "chidananda",
+    "dayananda", "prabhupada", "babaji", "sadguru",
+    # Singers & Artists
+    "hariharan", "jasraj", "subbulakshmi", "anuradha", "paudwal",
+    "jagjit", "yesudas", "ghoshal", "mangeshkar", "lata", "bhimsen",
+    "joshi", "chitra", "uma mohan", "spb", "balasubrahmanyam",
     # Places
     "mandir", "temple", "kashi", "varanasi", "vrindavan", "mathura",
     "ayodhya", "haridwar", "rishikesh", "kailash", "brindavan",
