@@ -148,6 +148,7 @@ export default function SpiritualTube() {
   const [searchQuery, setSearchQuery] = useState("");
   const [videos, setVideos] = useState<Video[]>([]);
   const [loading, setLoading] = useState(false);
+  const [isBackendOffline, setIsBackendOffline] = useState(false);
   const [paths, setPaths] = useState<LearningPath[]>([]);
   const [activeVideo, setActiveVideo] = useState<Video | null>(null);
   const [hasSearched, setHasSearched] = useState(false);  // true after first search attempt
@@ -206,10 +207,13 @@ export default function SpiritualTube() {
     let filtered = [...STATIC_FALLBACK_VIDEOS];
     if (queryText.trim()) {
       const q = queryText.toLowerCase();
-      filtered = filtered.filter(v => 
+      const matched = filtered.filter(v => 
         v.title.toLowerCase().includes(q) || 
         v.description.toLowerCase().includes(q)
       );
+      if (matched.length > 0) {
+        filtered = matched;
+      }
     }
     setVideos(filtered);
   };
@@ -221,11 +225,14 @@ export default function SpiritualTube() {
       if (response.ok) {
         const data = await response.json();
         setVideos(data && data.length > 0 ? data : STATIC_FALLBACK_VIDEOS);
+        setIsBackendOffline(false);
       } else {
+        setIsBackendOffline(true);
         setVideos(STATIC_FALLBACK_VIDEOS);
       }
     } catch (e) {
       console.error("Backend offline, using fallback videos:", e);
+      setIsBackendOffline(true);
       setVideos(STATIC_FALLBACK_VIDEOS);
     }
     setLoading(false);
@@ -237,11 +244,14 @@ export default function SpiritualTube() {
       if (response.ok) {
         const data = await response.json();
         setPaths(data && data.length > 0 ? data : STATIC_LEARNING_PATHS);
+        setIsBackendOffline(false);
       } else {
+        setIsBackendOffline(true);
         setPaths(STATIC_LEARNING_PATHS);
       }
     } catch (e) {
       console.error("Backend offline, using static learning paths:", e);
+      setIsBackendOffline(true);
       setPaths(STATIC_LEARNING_PATHS);
     }
   };
@@ -269,11 +279,14 @@ export default function SpiritualTube() {
       if (response.ok) {
         const data = await response.json();
         setVideos(data);
+        setIsBackendOffline(false);
       } else {
+        setIsBackendOffline(true);
         filterFallbackVideos(queryText);
       }
     } catch (e) {
       console.error("Search API failed, applying client-side fallback filter:", e);
+      setIsBackendOffline(true);
       filterFallbackVideos(queryText);
     }
     setLoading(false);
@@ -702,6 +715,23 @@ export default function SpiritualTube() {
           </button>
         </div>
       </div>
+
+      {isBackendOffline && (
+        <div className="bg-saffron/5 border border-saffron/25 rounded-xl p-4.5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs text-saffron backdrop-blur-md">
+          <div className="flex items-start sm:items-center gap-3">
+            <span className="text-lg leading-none mt-0.5 sm:mt-0">🪔</span>
+            <div>
+              <span className="font-bold block sm:inline">Offline Mode:</span> Using local fallback database. Launch your local FastAPI server and specify its tunnel address in Settings to discover and crawl online videos from YouTube.
+            </div>
+          </div>
+          <a
+            href="/settings"
+            className="whitespace-nowrap bg-saffron/15 hover:bg-saffron/25 border border-saffron/20 hover:border-saffron/40 text-saffron text-[10px] font-bold uppercase tracking-wider px-3.5 py-1.5 rounded-lg transition-all"
+          >
+            Settings
+          </a>
+        </div>
+      )}
 
       {/* Main Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">

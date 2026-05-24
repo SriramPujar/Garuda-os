@@ -180,6 +180,7 @@ export default function GarudaNada() {
   const [tracks, setTracks] = useState<Track[]>([]);
   const [activeTrack, setActiveTrack] = useState<Track | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [isBackendOffline, setIsBackendOffline] = useState(false);
 
   const isSpotifyTrack = (url: string) => url.includes("spotify.com") || url.startsWith("spotify:");
   const isYoutubeTrack = (url: string) => url.includes("youtube.com") || url.includes("youtu.be");
@@ -319,12 +320,15 @@ export default function GarudaNada() {
     }
     if (queryText.trim()) {
       const q = queryText.toLowerCase();
-      filtered = filtered.filter(t => 
+      const matched = filtered.filter(t => 
         t.title.toLowerCase().includes(q) || 
         t.artist.toLowerCase().includes(q) || 
         (t.deity && t.deity.toLowerCase().includes(q)) || 
         (t.lyrics && t.lyrics.toLowerCase().includes(q))
       );
+      if (matched.length > 0) {
+        filtered = matched;
+      }
     }
     setTracks(filtered);
   };
@@ -348,11 +352,14 @@ export default function GarudaNada() {
       if (response.ok) {
         const data = await response.json();
         setTracks(data && data.length > 0 ? data : STATIC_FALLBACK_TRACKS);
+        setIsBackendOffline(false);
       } else {
+        setIsBackendOffline(true);
         setTracks(STATIC_FALLBACK_TRACKS);
       }
     } catch (e) {
       console.error("Backend offline, loading fallback tracks:", e);
+      setIsBackendOffline(true);
       setTracks(STATIC_FALLBACK_TRACKS);
     }
     setLoading(false);
@@ -377,11 +384,14 @@ export default function GarudaNada() {
       if (response.ok) {
         const data = await response.json();
         setTracks(data);
+        setIsBackendOffline(false);
       } else {
+        setIsBackendOffline(true);
         filterFallbackTracks(queryText, trad, cat);
       }
     } catch (e) {
       console.error("Search API failed, applying client-side fallback filter:", e);
+      setIsBackendOffline(true);
       const trad = currentTradition !== undefined ? currentTradition : tradition;
       const cat = currentCategory !== undefined ? currentCategory : category;
       filterFallbackTracks(queryText, trad, cat);
@@ -792,6 +802,23 @@ export default function GarudaNada() {
           </p>
         </div>
       </div>
+
+      {isBackendOffline && (
+        <div className="bg-saffron/5 border border-saffron/25 rounded-xl p-4.5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs text-saffron backdrop-blur-md">
+          <div className="flex items-start sm:items-center gap-3">
+            <span className="text-lg leading-none mt-0.5 sm:mt-0">🪔</span>
+            <div>
+              <span className="font-bold block sm:inline">Offline Mode:</span> Using local fallback database. Launch your local FastAPI server and specify its tunnel address in Settings to discover online music from YouTube & Spotify.
+            </div>
+          </div>
+          <a
+            href="/settings"
+            className="whitespace-nowrap bg-saffron/15 hover:bg-saffron/25 border border-saffron/20 hover:border-saffron/40 text-saffron text-[10px] font-bold uppercase tracking-wider px-3.5 py-1.5 rounded-lg transition-all"
+          >
+            Settings
+          </a>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         

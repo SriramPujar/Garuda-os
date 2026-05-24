@@ -53,8 +53,14 @@ BLOCK_LIST = [
     "web series", "episode", "season", "serial", "teaser", "interview",
     "celebrity", "bollywood", "hollywood", "song remix", "dj remix",
     "horror", "thriller", "action movie", "item song", "love song",
+    "cartoon", "cartoons", "animation", "animated", "sonic gang", "nick india",
+    "kids club", "kids show", "toy", "toys", "nickelodeon", "voot kids",
+    "kinder", "disney", "pogo", "hungama",
     "roast", "standup", "stand up comedy", "tech", "gadget", "phone review",
     "stock market", "crypto", "finance", "business", "startup",
+    "kids", "kid", "tv show", "tv serial", "show", "sonic", "nick", "voot", 
+    "jiohotstar", "hotstar", "channel", "nursery", "rhymes", "rhyme", "poem", "poems",
+    "tv channel", "kids songs", "kids song"
 ]
 
 # A video MUST contain at least one of these to be considered spiritual
@@ -102,10 +108,10 @@ HEADERS = {
 # Utility helpers
 # ─────────────────────────────────────────────
 
-def _is_blocked(title: str) -> bool:
-    """Return True if title contains any explicitly non-spiritual keyword."""
-    tl = title.lower()
-    return any(bw in tl for bw in BLOCK_LIST)
+def _is_blocked(title: str, description: str = "", channel: str = "") -> bool:
+    """Return True if title, description, or channel contains any explicitly non-spiritual keyword."""
+    text = (title + " " + description + " " + channel).lower()
+    return any(bw in text for bw in BLOCK_LIST)
 
 def _is_spiritual(title: str, description: str = "") -> bool:
     """Return True only if the video is positively identified as Hindu spiritual content."""
@@ -217,10 +223,10 @@ async def search_via_youtube_api(query: str, max_results: int = 20) -> List[Dict
                     continue
                 snippet = item.get("snippet", {})
                 title = snippet.get("title", "")
-                if _is_blocked(title):
-                    continue
                 description = snippet.get("description", "")
                 channel = snippet.get("channelTitle", "")
+                if _is_blocked(title, description, channel):
+                    continue
                 thumb = (snippet.get("thumbnails", {}).get("high", {}).get("url") or
                          snippet.get("thumbnails", {}).get("medium", {}).get("url") or
                          f"https://img.youtube.com/vi/{vid_id}/hqdefault.jpg")
@@ -278,10 +284,10 @@ async def search_via_ytdlp(query: str, max_results: int = 20) -> List[Dict[str, 
                 continue
             title = entry.get("title", "")
             description = entry.get("description") or ""
-            # Must NOT be blocked AND MUST contain spiritual keywords
-            if _is_blocked(title) or not _is_spiritual(title, description):
-                continue
             channel = entry.get("uploader") or entry.get("channel") or ""
+            # Must NOT be blocked AND MUST contain spiritual keywords
+            if _is_blocked(title, description, channel) or not _is_spiritual(title, description):
+                continue
             duration = entry.get("duration") or 0
             thumb = entry.get("thumbnail") or f"https://img.youtube.com/vi/{vid_id}/hqdefault.jpg"
             category = _guess_category(title, description)
@@ -347,7 +353,7 @@ async def search_via_rss(query: str, max_per_channel: int = 5) -> List[Dict[str,
                     title_lower = title.lower()
                     if not any(qw in title_lower for qw in query_words):
                         continue
-                    if _is_blocked(title) or not _is_spiritual(title):
+                    if _is_blocked(title, "", channel_name) or not _is_spiritual(title):
                         continue
                     if vid_id in seen:
                         continue
@@ -420,9 +426,9 @@ async def get_related_videos(youtube_id: str, max_results: int = 10) -> List[Dic
         for rv in related[:max_results]:
             vid_id = rv.get("id")
             title = rv.get("title", "")
-            if not vid_id or _is_blocked(title) or not _is_spiritual(title):
-                continue
             channel = rv.get("uploader") or rv.get("channel", "")
+            if not vid_id or _is_blocked(title, "", channel) or not _is_spiritual(title):
+                continue
             duration = rv.get("duration") or 0
             thumb = rv.get("thumbnail") or f"https://img.youtube.com/vi/{vid_id}/hqdefault.jpg"
             category = _guess_category(title, "")
@@ -478,10 +484,11 @@ async def search_youtube_spiritual(query: str, max_results: int = 25,
             vid_id = video.get("youtube_id")
             title = video.get("title", "")
             description = video.get("description", "")
+            channel = video.get("channel_name", "")
             if not vid_id or vid_id in seen_ids:
                 continue
             # Strict dual gate: block list + must-contain spiritual keyword
-            if _is_blocked(title) or not _is_spiritual(title, description):
+            if _is_blocked(title, description, channel) or not _is_spiritual(title, description):
                 logger.debug(f"Filtered non-spiritual: {title[:50]}")
                 continue
             seen_ids.add(vid_id)
@@ -518,12 +525,12 @@ async def extract_channel_videos(channel_id: str, max_videos: int = 50) -> List[
                 continue
             vid_id = entry.get("id")
             title = entry.get("title", "")
-            if not vid_id or _is_blocked(title):
+            description = entry.get("description") or ""
+            channel = entry.get("uploader") or entry.get("channel", "")
+            if not vid_id or _is_blocked(title, description, channel):
                 continue
             duration = entry.get("duration") or 0
             thumb = entry.get("thumbnail") or f"https://img.youtube.com/vi/{vid_id}/hqdefault.jpg"
-            channel = entry.get("uploader") or entry.get("channel", "")
-            description = entry.get("description") or ""
             category = _guess_category(title, description)
             results.append(_build_video_obj(vid_id, title, description, int(duration), thumb, channel, category))
         return results
