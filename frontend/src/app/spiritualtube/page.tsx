@@ -79,6 +79,71 @@ interface GraphLinkData {
   weight: number;
 }
 
+const STATIC_FALLBACK_VIDEOS: Video[] = [
+  {
+    id: 1001,
+    youtube_id: "aaBeXwSsmtY",
+    title: "Who Am I? – Swami Sarvapriyananda (Vedanta Society of New York)",
+    description: "An introduction to self-inquiry (Atma-Vichara) as taught by Ramana Maharshi, explained by Swami Sarvapriyananda.",
+    duration: 960,
+    thumbnail_url: "https://img.youtube.com/vi/aaBeXwSsmtY/0.jpg",
+    category: "Vedanta"
+  },
+  {
+    id: 1002,
+    youtube_id: "ATflA6WOy0I",
+    title: "Vishnu Sahasranamam – M.S. Subbulakshmi",
+    description: "The legendary rendering of the 1000 Names of Lord Vishnu by Bharat Ratna M.S. Subbulakshmi.",
+    duration: 3120,
+    thumbnail_url: "https://img.youtube.com/vi/ATflA6WOy0I/0.jpg",
+    category: "Bhakti"
+  },
+  {
+    id: 1003,
+    youtube_id: "emsphj4r_Q8",
+    title: "Mahamrityunjaya Mantra – 108 Times Healing Chant",
+    description: "Sacred Mahamrityunjaya Mantra chanted 108 times for healing, protection, and liberation from the cycle of death.",
+    duration: 2400,
+    thumbnail_url: "https://img.youtube.com/vi/emsphj4r_Q8/0.jpg",
+    category: "Chants"
+  },
+  {
+    id: 1004,
+    youtube_id: "hMBKmQEPNzI",
+    title: "Shiva Tandava Stotram – Powerful Devotional",
+    description: "The powerful Shiva Tandava Stotram, a hymn praising Lord Shiva's cosmic dance.",
+    duration: 480,
+    thumbnail_url: "https://img.youtube.com/vi/hMBKmQEPNzI/0.jpg",
+    category: "Chants"
+  },
+  {
+    id: 1005,
+    youtube_id: "ZhIJgYLjoVw",
+    title: "Sri Venkateswara Suprabhatam – Morning Prayer",
+    description: "Auspicious morning chants praising Lord Venkateswara, sung at dawn to invoke the blessings of the Divine.",
+    duration: 1200,
+    thumbnail_url: "https://img.youtube.com/vi/ZhIJgYLjoVw/0.jpg",
+    category: "Bhakti"
+  }
+];
+
+const STATIC_LEARNING_PATHS: LearningPath[] = [
+  {
+    id: 101,
+    name: "Vedanta Foundations",
+    description: "Learn the core concepts of Non-dualism, Atman, and Brahman from the Upanishads.",
+    category: "Vedanta",
+    level: "Beginner"
+  },
+  {
+    id: 102,
+    name: "Bhakti Yoga & Chanting",
+    description: "Discover the significance of sound vibration (Nada) and devotional surrender.",
+    category: "Bhakti",
+    level: "Intermediate"
+  }
+];
+
 export default function SpiritualTube() {
   const [searchQuery, setSearchQuery] = useState("");
   const [videos, setVideos] = useState<Video[]>([]);
@@ -133,10 +198,21 @@ export default function SpiritualTube() {
 
   useEffect(() => {
     fetchLearningPaths();
-    // No default video load — user must search to see results
-    // This prevents the 9 curated default videos from always appearing
+    fetchCuratedVideos();
   }, []);
 
+
+  const filterFallbackVideos = (queryText: string) => {
+    let filtered = [...STATIC_FALLBACK_VIDEOS];
+    if (queryText.trim()) {
+      const q = queryText.toLowerCase();
+      filtered = filtered.filter(v => 
+        v.title.toLowerCase().includes(q) || 
+        v.description.toLowerCase().includes(q)
+      );
+    }
+    setVideos(filtered);
+  };
 
   const fetchCuratedVideos = async () => {
     setLoading(true);
@@ -144,10 +220,13 @@ export default function SpiritualTube() {
       const response = await fetch(`${getApiUrl()}/api/v1/spiritualtube/videos`);
       if (response.ok) {
         const data = await response.json();
-        setVideos(data);
+        setVideos(data && data.length > 0 ? data : STATIC_FALLBACK_VIDEOS);
+      } else {
+        setVideos(STATIC_FALLBACK_VIDEOS);
       }
     } catch (e) {
-      console.error(e);
+      console.error("Backend offline, using fallback videos:", e);
+      setVideos(STATIC_FALLBACK_VIDEOS);
     }
     setLoading(false);
   };
@@ -157,10 +236,13 @@ export default function SpiritualTube() {
       const response = await fetch(`${getApiUrl()}/api/v1/spiritualtube/paths`);
       if (response.ok) {
         const data = await response.json();
-        setPaths(data);
+        setPaths(data && data.length > 0 ? data : STATIC_LEARNING_PATHS);
+      } else {
+        setPaths(STATIC_LEARNING_PATHS);
       }
     } catch (e) {
-      console.error(e);
+      console.error("Backend offline, using static learning paths:", e);
+      setPaths(STATIC_LEARNING_PATHS);
     }
   };
 
@@ -187,9 +269,12 @@ export default function SpiritualTube() {
       if (response.ok) {
         const data = await response.json();
         setVideos(data);
+      } else {
+        filterFallbackVideos(queryText);
       }
     } catch (e) {
-      console.error(e);
+      console.error("Search API failed, applying client-side fallback filter:", e);
+      filterFallbackVideos(queryText);
     }
     setLoading(false);
   };
@@ -200,41 +285,48 @@ export default function SpiritualTube() {
   };
 
   const selectVideo = async (video: Video) => {
+    const applyVideoDetails = (details: Video) => {
+      setActiveVideo(details);
+      
+      setPlaybackSeconds(0);
+      setShowMindfulWarning(false);
+      if (playbackTimerRef.current) clearInterval(playbackTimerRef.current);
+      
+      if (safeMode) {
+        let count = 0;
+        playbackTimerRef.current = setInterval(() => {
+          count += 1;
+          setPlaybackSeconds(count);
+          if (count === 30) {
+            setShowMindfulWarning(true);
+          }
+        }, 1000);
+      }
+
+      fetchNotes(video.youtube_id);
+      
+      if (details.learnings_json) {
+        try {
+          setAiTeachings(JSON.parse(details.learnings_json));
+        } catch {
+          setAiTeachings(null);
+        }
+      } else {
+        setAiTeachings(null);
+      }
+    };
+
     try {
       const response = await fetch(`${getApiUrl()}/api/v1/spiritualtube/videos/${video.youtube_id}`);
       if (response.ok) {
         const details = await response.json();
-        setActiveVideo(details);
-        
-        setPlaybackSeconds(0);
-        setShowMindfulWarning(false);
-        if (playbackTimerRef.current) clearInterval(playbackTimerRef.current);
-        
-        if (safeMode) {
-          let count = 0;
-          playbackTimerRef.current = setInterval(() => {
-            count += 1;
-            setPlaybackSeconds(count);
-            if (count === 30) {
-              setShowMindfulWarning(true);
-            }
-          }, 1000);
-        }
-
-        fetchNotes(video.youtube_id);
-        
-        if (details.learnings_json) {
-          try {
-            setAiTeachings(JSON.parse(details.learnings_json));
-          } catch {
-            setAiTeachings(null);
-          }
-        } else {
-          setAiTeachings(null);
-        }
+        applyVideoDetails(details);
+      } else {
+        applyVideoDetails(video);
       }
     } catch (e) {
-      console.error(e);
+      console.error("Failed to load video details from backend, falling back to client-side play:", e);
+      applyVideoDetails(video);
     }
   };
 

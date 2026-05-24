@@ -61,6 +61,121 @@ interface GraphLinkData {
   weight: number;
 }
 
+const STATIC_FALLBACK_TRACKS: Track[] = [
+  {
+    id: 1001,
+    title: "Shiva Tandava Stotram",
+    artist: "Traditional Vedic Chants",
+    url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3",
+    category: "Chant",
+    deity: "Shiva",
+    lyrics: "Jata tave gala jala pravaha pavitha sthale...",
+    meaning: "From the forest of His matted locks, water flows and wets His neck...",
+    mood_tags: "energetic, focus, raw",
+    spiritual_intensity: 5,
+    is_mantra_loopable: false,
+    duration: 520
+  },
+  {
+    id: 1002,
+    title: "Gayatri Mantra (108 Loops)",
+    artist: "Pandit Jasraj",
+    url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3",
+    category: "Mantra",
+    deity: "Gayatri / Savitr",
+    lyrics: "Om bhur bhuvah svah tat savitur varenyam bhargo devasya dhimahi dhiyo yo nah prachodayat",
+    meaning: "We meditate on the glorious splendor of the Vivifier, the Divine Sun. May He inspire our intelligence.",
+    mood_tags: "calm, focus, morning",
+    spiritual_intensity: 4,
+    is_mantra_loopable: true,
+    duration: 600
+  },
+  {
+    id: 1003,
+    title: "Hare Krishna Maha Mantra",
+    artist: "Vrindavan Kirtan",
+    url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3",
+    category: "Kirtan",
+    deity: "Krishna",
+    lyrics: "Hare Krishna Hare Krishna Krishna Krishna Hare Hare, Hare Rama Hare Rama Rama Rama Hare Hare",
+    meaning: "Oh Divine Energy (Hara), Oh All-Attractive Lord (Krishna), Oh Supreme Enjoyer (Rama), please engage me in your devotional service.",
+    mood_tags: "energetic, calm, bhakti",
+    spiritual_intensity: 4,
+    is_mantra_loopable: true,
+    duration: 480
+  },
+  {
+    id: 1004,
+    title: "Sri Suktam",
+    artist: "Rigveda Chants",
+    url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-4.mp3",
+    category: "Chant",
+    deity: "Lakshmi",
+    lyrics: "Hiranyavarnam harinim suvarnarajatastrajam...",
+    meaning: "I invoke Sri, the Golden-hued, the beautiful deer adorned with silver and gold garlands...",
+    mood_tags: "calm, focus, abundance",
+    spiritual_intensity: 5,
+    is_mantra_loopable: false,
+    duration: 360
+  },
+  {
+    id: 1005,
+    title: "Om Chanting",
+    artist: "Himalayan Sadhus",
+    url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-5.mp3",
+    category: "Meditation",
+    deity: "Brahman",
+    lyrics: "A-U-M",
+    meaning: "The primordial sound of creation, representing the waking, dreaming, and deep sleep states leading to the Turiya (pure consciousness).",
+    mood_tags: "calm, sleep, meditation",
+    spiritual_intensity: 3,
+    is_mantra_loopable: true,
+    duration: 900
+  },
+  {
+    id: 1006,
+    title: "Shree Hanuman Chalisa",
+    artist: "Hariharan",
+    url: "https://open.spotify.com/track/0U6K212Wv9K7X8dO2t5i2W",
+    category: "Chant",
+    deity: "Hanuman",
+    lyrics: "Shree Guru Charan Saroj Raj Niji Manu Mukur Sudhari...",
+    meaning: "Having cleansed the mirror of my mind with the dust of the lotus feet of Sri Guru...",
+    mood_tags: "energetic, bhakti",
+    spiritual_intensity: 5,
+    is_mantra_loopable: false,
+    duration: 580
+  },
+  {
+    id: 1007,
+    title: "Shiva Tandava Stotram",
+    artist: "Uma Mohan",
+    url: "https://open.spotify.com/track/2rqhFgbbKwnb9MLmUQDhG6",
+    category: "Chant",
+    deity: "Shiva",
+    lyrics: "Jatatavegalajjala pravahapavitasthale...",
+    meaning: "With his neck consecrated by the flow of water that flows from his hair...",
+    mood_tags: "energetic, focus",
+    spiritual_intensity: 5,
+    is_mantra_loopable: false,
+    duration: 480
+  },
+  {
+    id: 1008,
+    title: "Madhurashtakam",
+    artist: "Shreya Ghoshal",
+    url: "https://open.spotify.com/track/1D1Kj7hY37k9vB0vW87jBw",
+    category: "Bhajan",
+    deity: "Krishna",
+    lyrics: "Adharam Madhuram Vadanam Madhuram...",
+    meaning: "His lips are sweet, His face is sweet, His eyes are sweet, His smile is sweet...",
+    mood_tags: "calm, bhakti",
+    spiritual_intensity: 4,
+    is_mantra_loopable: false,
+    duration: 250
+  }
+];
+
 export default function GarudaNada() {
   const [tracks, setTracks] = useState<Track[]>([]);
   const [activeTrack, setActiveTrack] = useState<Track | null>(null);
@@ -197,6 +312,23 @@ export default function GarudaNada() {
     }
   }, [ambientForest, isPlaying]);
 
+  const filterFallbackTracks = (queryText: string, trad: string, cat: string) => {
+    let filtered = [...STATIC_FALLBACK_TRACKS];
+    if (cat && cat !== "All") {
+      filtered = filtered.filter(t => t.category.toLowerCase() === cat.toLowerCase());
+    }
+    if (queryText.trim()) {
+      const q = queryText.toLowerCase();
+      filtered = filtered.filter(t => 
+        t.title.toLowerCase().includes(q) || 
+        t.artist.toLowerCase().includes(q) || 
+        (t.deity && t.deity.toLowerCase().includes(q)) || 
+        (t.lyrics && t.lyrics.toLowerCase().includes(q))
+      );
+    }
+    setTracks(filtered);
+  };
+
   const fetchTracks = async (catName?: string) => {
     setLoading(true);
     const selected = catName || category;
@@ -215,10 +347,13 @@ export default function GarudaNada() {
       const response = await fetch(url);
       if (response.ok) {
         const data = await response.json();
-        setTracks(data);
+        setTracks(data && data.length > 0 ? data : STATIC_FALLBACK_TRACKS);
+      } else {
+        setTracks(STATIC_FALLBACK_TRACKS);
       }
     } catch (e) {
-      console.error(e);
+      console.error("Backend offline, loading fallback tracks:", e);
+      setTracks(STATIC_FALLBACK_TRACKS);
     }
     setLoading(false);
   };
@@ -242,9 +377,14 @@ export default function GarudaNada() {
       if (response.ok) {
         const data = await response.json();
         setTracks(data);
+      } else {
+        filterFallbackTracks(queryText, trad, cat);
       }
     } catch (e) {
-      console.error(e);
+      console.error("Search API failed, applying client-side fallback filter:", e);
+      const trad = currentTradition !== undefined ? currentTradition : tradition;
+      const cat = currentCategory !== undefined ? currentCategory : category;
+      filterFallbackTracks(queryText, trad, cat);
     }
     setLoading(false);
   };
