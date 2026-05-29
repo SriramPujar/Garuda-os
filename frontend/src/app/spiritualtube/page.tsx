@@ -3,6 +3,7 @@
 import { useEffect, useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { getApiUrl } from "@/utils/api";
+import { searchYouTubeClient } from "@/utils/spiritual_search";
 import { 
   Search, 
   Tv, 
@@ -197,9 +198,14 @@ export default function SpiritualTube() {
   const [seedSuccess, setSeedSuccess] = useState("");
   const [triggerLoading, setTriggerLoading] = useState(false);
 
+  const [hasYtKey, setHasYtKey] = useState(false);
+
   useEffect(() => {
     fetchLearningPaths();
     fetchCuratedVideos();
+    const localYtKey = typeof window !== "undefined" ? localStorage.getItem("youtube_api_key") : null;
+    const clientYtKey = localYtKey || process.env.NEXT_PUBLIC_YOUTUBE_API_KEY || process.env.YOUTUBE_API_KEY;
+    setHasYtKey(!!clientYtKey);
   }, []);
 
 
@@ -258,6 +264,11 @@ export default function SpiritualTube() {
     setLoading(true);
     setHasSearched(true);
     setLastQuery(queryText);
+    
+    // Check if client-side YouTube search is configured
+    const localYtKey = typeof window !== "undefined" ? localStorage.getItem("youtube_api_key") : null;
+    const clientYtKey = localYtKey || process.env.NEXT_PUBLIC_YOUTUBE_API_KEY || process.env.YOUTUBE_API_KEY;
+
     try {
       const trad = currentTradition !== undefined ? currentTradition : tradition;
       const ctype = currentContentType !== undefined ? currentContentType : contentType;
@@ -278,13 +289,43 @@ export default function SpiritualTube() {
         setVideos(data);
         setIsBackendOffline(false);
       } else {
-        setIsBackendOffline(true);
-        filterFallbackVideos(queryText);
+        // Backend API failed. Try client-side live search if API key exists.
+        if (clientYtKey) {
+          const ytResults = await searchYouTubeClient(queryText, clientYtKey);
+          if (ytResults && ytResults.length > 0) {
+            setVideos(ytResults);
+            setIsBackendOffline(false);
+          } else {
+            setIsBackendOffline(true);
+            filterFallbackVideos(queryText);
+          }
+        } else {
+          setIsBackendOffline(true);
+          filterFallbackVideos(queryText);
+        }
       }
     } catch (e) {
       console.error("Search API failed, applying client-side fallback filter:", e);
-      setIsBackendOffline(true);
-      filterFallbackVideos(queryText);
+      // Try client-side live search if API key exists.
+      if (clientYtKey) {
+        try {
+          const ytResults = await searchYouTubeClient(queryText, clientYtKey);
+          if (ytResults && ytResults.length > 0) {
+            setVideos(ytResults);
+            setIsBackendOffline(false);
+          } else {
+            setIsBackendOffline(true);
+            filterFallbackVideos(queryText);
+          }
+        } catch (ytErr) {
+          console.error("Client-side YouTube search failed:", ytErr);
+          setIsBackendOffline(true);
+          filterFallbackVideos(queryText);
+        }
+      } else {
+        setIsBackendOffline(true);
+        filterFallbackVideos(queryText);
+      }
     }
     setLoading(false);
   };
@@ -713,7 +754,7 @@ export default function SpiritualTube() {
         </div>
       </div>
 
-      {isBackendOffline && (
+      {isBackendOffline && !hasYtKey && (
         <div className="bg-saffron/5 border border-saffron/25 rounded-xl p-4.5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs text-saffron backdrop-blur-md">
           <div className="flex items-start sm:items-center gap-3">
             <span className="text-lg leading-none mt-0.5 sm:mt-0">🪔</span>

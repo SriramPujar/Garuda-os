@@ -3,6 +3,7 @@
 import { useEffect, useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { getApiUrl } from "@/utils/api";
+import { searchYouTubeClient, searchSpotifyClient } from "@/utils/spiritual_search";
 import { 
   Play, 
   Pause, 
@@ -253,8 +254,17 @@ export default function GarudaNada() {
   const conchAudioRef = useRef<HTMLAudioElement | null>(null);
   const forestAudioRef = useRef<HTMLAudioElement | null>(null);
 
+  const [hasKeys, setHasKeys] = useState(false);
+
   useEffect(() => {
     fetchTracks();
+    
+    // Check if client keys exist
+    const localClientId = typeof window !== "undefined" ? localStorage.getItem("spotify_client_id") : null;
+    const localYtKey = typeof window !== "undefined" ? localStorage.getItem("youtube_api_key") : null;
+    const clientYtKey = localYtKey || process.env.NEXT_PUBLIC_YOUTUBE_API_KEY || process.env.YOUTUBE_API_KEY;
+    const clientSpotifyId = localClientId || process.env.NEXT_PUBLIC_SPOTIFY_CLIENT_ID || process.env.SPOTIFY_CLIENT_ID;
+    setHasKeys(!!(clientYtKey || clientSpotifyId));
     
     // Initialize ambient audios
     bellsAudioRef.current = new Audio("/sounds/bell.ogg?v=1");
@@ -365,6 +375,70 @@ export default function GarudaNada() {
   // Hybrid Search logic using advanced discovery router
   const triggerSearch = async (queryText: string, currentTradition?: string, currentCategory?: string, currentMinAuth?: number, currentExpand?: boolean) => {
     setLoading(true);
+    
+    // Check if client-side credentials are configured
+    const localClientId = typeof window !== "undefined" ? localStorage.getItem("spotify_client_id") : null;
+    const clientSpotifyId = localClientId || process.env.NEXT_PUBLIC_SPOTIFY_CLIENT_ID || process.env.SPOTIFY_CLIENT_ID;
+
+    const localClientSecret = typeof window !== "undefined" ? localStorage.getItem("spotify_client_secret") : null;
+    const clientSpotifySecret = localClientSecret || process.env.NEXT_PUBLIC_SPOTIFY_CLIENT_SECRET || process.env.SPOTIFY_CLIENT_SECRET;
+
+    const localYtKey = typeof window !== "undefined" ? localStorage.getItem("youtube_api_key") : null;
+    const clientYtKey = localYtKey || process.env.NEXT_PUBLIC_YOUTUBE_API_KEY || process.env.YOUTUBE_API_KEY;
+
+    const runClientSearchFallback = async () => {
+      const trad = currentTradition !== undefined ? currentTradition : tradition;
+      const cat = currentCategory !== undefined ? currentCategory : category;
+
+      // 1. Spotify first preference
+      if (clientSpotifyId && clientSpotifySecret) {
+        try {
+          const spotifyResults = await searchSpotifyClient(queryText, clientSpotifyId, clientSpotifySecret);
+          if (spotifyResults && spotifyResults.length > 0) {
+            setTracks(spotifyResults);
+            setIsBackendOffline(false);
+            return true;
+          }
+        } catch (spotifyErr) {
+          console.error("Client-side Spotify search failed:", spotifyErr);
+        }
+      }
+
+      // 2. YouTube second preference
+      if (clientYtKey) {
+        try {
+          const ytResults = await searchYouTubeClient(queryText, clientYtKey);
+          if (ytResults && ytResults.length > 0) {
+            const formattedYtTracks = ytResults.map((yr, idx) => ({
+              id: 900000 + idx, // Local-only id prefix
+              title: yr.title,
+              artist: yr.channel_name || "YouTube Devotional",
+              url: `https://www.youtube.com/watch?v=${yr.youtube_id}`,
+              category: yr.category || "Bhajan",
+              duration: yr.duration || 0,
+              lyrics: `[YouTube Audio Stream]\nLyrics study in progress for '${yr.title}'...`,
+              meaning: `Contemplate this devotional audio track from channel: ${yr.channel_name}.`,
+              mood_tags: "sacred, calm",
+              spiritual_intensity: 5,
+              is_mantra_loopable: ["mantra", "loop", "chant"].some(w => yr.title.toLowerCase().includes(w)),
+              audio_source: "youtube",
+              authenticity_score: 90
+            }));
+            setTracks(formattedYtTracks);
+            setIsBackendOffline(false);
+            return true;
+          }
+        } catch (ytErr) {
+          console.error("Client-side YouTube search failed:", ytErr);
+        }
+      }
+
+      // 3. Static fallback
+      setIsBackendOffline(true);
+      filterFallbackTracks(queryText, trad, cat);
+      return false;
+    };
+
     try {
       const trad = currentTradition !== undefined ? currentTradition : tradition;
       const cat = currentCategory !== undefined ? currentCategory : category;
@@ -383,15 +457,12 @@ export default function GarudaNada() {
         setTracks(data);
         setIsBackendOffline(false);
       } else {
-        setIsBackendOffline(true);
-        filterFallbackTracks(queryText, trad, cat);
+        // Backend returned non-OK. Try client-side live search.
+        await runClientSearchFallback();
       }
     } catch (e) {
       console.error("Search API failed, applying client-side fallback filter:", e);
-      setIsBackendOffline(true);
-      const trad = currentTradition !== undefined ? currentTradition : tradition;
-      const cat = currentCategory !== undefined ? currentCategory : category;
-      filterFallbackTracks(queryText, trad, cat);
+      await runClientSearchFallback();
     }
     setLoading(false);
   };
@@ -800,7 +871,7 @@ export default function GarudaNada() {
         </div>
       </div>
 
-      {isBackendOffline && (
+      {isBackendOffline && !hasKeys && (
         <div className="bg-saffron/5 border border-saffron/25 rounded-xl p-4.5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs text-saffron backdrop-blur-md">
           <div className="flex items-start sm:items-center gap-3">
             <span className="text-lg leading-none mt-0.5 sm:mt-0">🪔</span>

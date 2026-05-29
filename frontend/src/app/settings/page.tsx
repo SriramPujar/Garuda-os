@@ -22,6 +22,11 @@ export default function SettingsPage() {
   // Backend URL configuration
   const [backendUrlInput, setBackendUrlInput] = useState("http://localhost:8000");
 
+  // External API keys
+  const [youtubeApiKey, setYoutubeApiKey] = useState("");
+  const [spotifyClientId, setSpotifyClientId] = useState("");
+  const [spotifyClientSecret, setSpotifyClientSecret] = useState("");
+
   useEffect(() => {
     // Check if token exists and fetch details
     const token = localStorage.getItem("token");
@@ -35,6 +40,11 @@ export default function SettingsPage() {
     if (savedBackend) {
       setBackendUrlInput(savedBackend);
     }
+
+    // Load API keys
+    setYoutubeApiKey(localStorage.getItem("youtube_api_key") || "");
+    setSpotifyClientId(localStorage.getItem("spotify_client_id") || "");
+    setSpotifyClientSecret(localStorage.getItem("spotify_client_secret") || "");
   }, []);
 
   const fetchProfile = async (token: string) => {
@@ -166,6 +176,21 @@ export default function SettingsPage() {
     }
   };
 
+  const handleSaveApiCredentials = (e: React.FormEvent) => {
+    e.preventDefault();
+    setError("");
+    setMessage("");
+    try {
+      localStorage.setItem("youtube_api_key", youtubeApiKey.trim());
+      localStorage.setItem("spotify_client_id", spotifyClientId.trim());
+      localStorage.setItem("spotify_client_secret", spotifyClientSecret.trim());
+      setMessage("API Credentials updated successfully!");
+      setTimeout(() => setMessage(""), 3000);
+    } catch (err) {
+      setError("Failed to save credentials.");
+    }
+  };
+
   const handleLogout = () => {
     localStorage.removeItem("token");
     setIsRegistered(false);
@@ -224,6 +249,57 @@ export default function SettingsPage() {
             className="rounded bg-saffron text-background px-4 py-1.8 text-xs font-semibold hover:bg-saffron-light flex items-center gap-1 shrink-0 cursor-pointer"
           >
             <Save className="h-3.5 w-3.5" /> Save API URL
+          </button>
+        </form>
+      </div>
+
+      {/* API Credentials configuration */}
+      <div className="rounded-xl border border-sacred-border bg-card p-6 space-y-4">
+        <h3 className="text-sm font-semibold uppercase tracking-wider text-foreground flex items-center gap-2">
+          <Key className="h-4.5 w-4.5 text-saffron" />
+          <span>Devotional Services API Credentials</span>
+        </h3>
+        <p className="text-[11px] text-muted-sacred leading-relaxed">
+          Provide your API keys to enable live searching directly in the browser when the local backend is unreachable (e.g. deployed on Vercel).
+        </p>
+        <form onSubmit={handleSaveApiCredentials} className="space-y-4">
+          <div className="space-y-1">
+            <label className="text-[9px] uppercase font-bold text-muted-sacred">YouTube Data API v3 Key</label>
+            <input 
+              type="password" 
+              value={youtubeApiKey}
+              onChange={(e) => setYoutubeApiKey(e.target.value)}
+              placeholder="AIzaSy..."
+              className="w-full rounded border border-sacred-border bg-background px-3 py-1.5 text-xs text-foreground focus:outline-none focus:border-saffron/40 font-medium"
+            />
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="space-y-1">
+              <label className="text-[9px] uppercase font-bold text-muted-sacred">Spotify Client ID</label>
+              <input 
+                type="text" 
+                value={spotifyClientId}
+                onChange={(e) => setSpotifyClientId(e.target.value)}
+                placeholder="Spotify Client ID"
+                className="w-full rounded border border-sacred-border bg-background px-3 py-1.5 text-xs text-foreground focus:outline-none focus:border-saffron/40 font-medium"
+              />
+            </div>
+            <div className="space-y-1">
+              <label className="text-[9px] uppercase font-bold text-muted-sacred">Spotify Client Secret</label>
+              <input 
+                type="password" 
+                value={spotifyClientSecret}
+                onChange={(e) => setSpotifyClientSecret(e.target.value)}
+                placeholder="Spotify Client Secret"
+                className="w-full rounded border border-sacred-border bg-background px-3 py-1.5 text-xs text-foreground focus:outline-none focus:border-saffron/40 font-medium"
+              />
+            </div>
+          </div>
+          <button
+            type="submit"
+            className="rounded bg-saffron text-background px-4 py-1.8 text-xs font-semibold hover:bg-saffron-light flex items-center gap-1 shrink-0 cursor-pointer"
+          >
+            <Save className="h-3.5 w-3.5" /> Save API Credentials
           </button>
         </form>
       </div>
