@@ -188,6 +188,19 @@ async def search_audio(
             
             track_id = existing.id if existing else None
             
+            # Calculate a query match score for online tracks based on title match
+            match_score = 5.0
+            title_lower = t["title"].lower()
+            query_lower = query.lower()
+            if query_lower in title_lower:
+                match_score += 10.0
+            else:
+                for word in query_lower.split():
+                    if len(word) > 2 and word in title_lower:
+                        match_score += 2.0
+            if t["audio_source"] == "spotify" or "spotify.com" in url:
+                match_score += 0.5
+
             # Format to result payload
             results.append({
                 "id": track_id,
@@ -206,7 +219,7 @@ async def search_audio(
                 "authenticity_score": t["authenticity_score"],
                 "spiritual_tradition": tradition,
                 "lyrics_translation": None,
-                "search_score": 0.5
+                "search_score": round(match_score, 2)
             })
 
             if not existing:
@@ -249,8 +262,8 @@ async def search_audio(
     except Exception as e:
         logger.error(f"Live Spotify search failed: {e}")
 
-    # Sort final results: Spotify tracks first, then YouTube/other tracks
-    results.sort(key=lambda x: 0 if (x.get("audio_source") == "spotify" or (x.get("url") and "spotify.com" in x.get("url"))) else 1)
+    # Sort final results: primary sort by search_score descending, secondary sort to prefer Spotify
+    results.sort(key=lambda x: (-x.get("search_score", 0.0), 0 if (x.get("audio_source") == "spotify" or (x.get("url") and "spotify.com" in x.get("url"))) else 1))
 
     return results
 

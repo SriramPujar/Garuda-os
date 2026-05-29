@@ -640,7 +640,7 @@ def update_video_progress(
 # --- Learning Paths ---
 
 @router.get("/paths", response_model=List[LearningPathOut])
-def get_learning_paths(db: Session = Depends(get_db)):
+async def get_learning_paths(db: Session = Depends(get_db)):
     paths = db.query(LearningPath).all()
     # Seed default paths if empty
     if not paths:
@@ -664,8 +664,8 @@ def get_learning_paths(db: Session = Depends(get_db)):
         
         # Link default fallback videos
         # Who Am I (xG8hJ9-sFts) to Vedanta Path
-        v1 = get_video_details("xG8hJ9-sFts", db)
-        v2 = get_video_details("ZefBf73MZf8", db)
+        v1 = await get_video_details("xG8hJ9-sFts", db)
+        v2 = await get_video_details("ZefBf73MZf8", db)
         
         link1 = LearningPathVideo(path_id=path2.id, video_id=v1.id, sequence=1)
         link2 = LearningPathVideo(path_id=path1.id, video_id=v2.id, sequence=1)

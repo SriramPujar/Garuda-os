@@ -239,21 +239,21 @@ class SpiritualSearchEngine:
             score = 0.0
             for eq in expanded_queries:
                 if eq.lower() in t.title.lower():
-                    score += 1.0
+                    score += 10.0
                 if t.artist and eq.lower() in t.artist.lower():
-                    score += 0.3
+                    score += 3.0
                     
             if t.id in semantic_scores:
-                score += 2.0
+                score += 5.0
                 
             if t.title in boosted_titles:
-                score += 1.5
+                score += 4.0
                 
             score += (t.authenticity_score or 50) * 0.02
             
-            # Boost Spotify tracks to keep them as primary preference
+            # Boost Spotify tracks slightly to serve as a tie-breaker
             if t.audio_source == "spotify" or (t.url and "spotify.com" in t.url):
-                score += 10.0
+                score += 0.5
                 
             ranked_results.append((score, t))
             
