@@ -283,7 +283,7 @@ export default function SpiritualTube() {
       if (minAuth > 0) url += `&min_authenticity=${minAuth}`;
       url += `&expand=${exp}`;
 
-      const response = await fetch(url);
+      const response = await fetch(url, { cache: "no-store" });
       if (response.ok) {
         const data = await response.json();
         setVideos(data);
